@@ -1,3 +1,17 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""Title: Train WGCN models
+
+Description: 
+
+"""
+
+# =======================================
+# @author Zhibin.Lu
+# @email zhibin.lu@umontreal.ca
+# =======================================
+
+
 from __future__ import division, print_function
 
 import argparse
@@ -63,7 +77,7 @@ cfg_add_linear_mapping_term = False
 
 cfg_normlize_x_mode = "normalize_features"
 
-print("\n Start at:", time.asctime(), "Machine:", os.uname()[1])
+print("\nStart at:", time.asctime(), "Machine:", os.uname()[1])
 print(
     "---Config---\nModel:",
     cfg_model,

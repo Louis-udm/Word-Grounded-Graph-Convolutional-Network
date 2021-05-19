@@ -1,3 +1,17 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""Title: Train Traditional GCN / Text-GCN models
+
+Description: 
+
+"""
+
+# =======================================
+# @author Zhibin.Lu
+# @email zhibin.lu@umontreal.ca
+# =======================================
+
+
 from __future__ import division, print_function
 
 import argparse
@@ -60,7 +74,7 @@ cfg_early_stopping = 10  # Tolerance for early stopping (# of epochs).
 cfg_max_degree = 3  # Maximum Chebyshev polynomial degree.
 cfg_act_func = nn.ReLU()
 
-print("\n Start at:", time.asctime())
+print("\nStart at:", time.asctime())
 print("---Config---\nModel:", cfg_model, "Data set:", cfg_ds)
 print(
     "Total epochs:",

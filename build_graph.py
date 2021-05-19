@@ -63,8 +63,8 @@ if cfg_ds not in datasets:
 
 data_dir = "data"
 
-print("\n Start at:", time.asctime(), "Machine:", os.uname()[1])
-print("datset:", cfg_ds, "dump_dir:", data_dir)
+print("\nStart at:", time.asctime(), "Machine:", os.uname()[1])
+print("Datset selected:", cfg_ds)
 
 word_embeddings_dim = 300
 word_vector_map = {}
@@ -120,7 +120,7 @@ for doc_content in doc_content_list:
 
 clean_corpus_str = "\n".join(clean_docs)
 
-with open(os.path.join(data_dir, cfg_ds + ".clean.txt"), "w") as f:
+with open(os.path.join(data_dir, cfg_ds + ".clean.txt.dump"), "w") as f:
     f.write(clean_corpus_str)
 
 ##############################
@@ -142,7 +142,7 @@ with open(os.path.join(data_dir, cfg_ds + "_label.txt"), "r") as f:
 
 doc_content_list = []
 doc_len_list = []
-with open(os.path.join(data_dir, cfg_ds + ".clean.txt"), "r") as f:
+with open(os.path.join(data_dir, cfg_ds + ".clean.txt.dump"), "r") as f:
     lines = f.readlines()
     for line in lines:
         doc_content_list.append(line.strip())
@@ -163,7 +163,7 @@ random.shuffle(train_ids)
 
 # before seprate real_train and valid
 train_ids_str = "\n".join(str(index) for index in train_ids)
-with open(os.path.join(data_dir, cfg_ds + ".train.index"), "w") as f:
+with open(os.path.join(data_dir, cfg_ds + ".train.index.dump"), "w") as f:
     f.write(train_ids_str)
 
 test_ids = []
@@ -174,7 +174,7 @@ print("test_ids len:", len(test_ids))
 random.shuffle(test_ids)
 
 test_ids_str = "\n".join(str(index) for index in test_ids)
-with open(os.path.join(data_dir, cfg_ds + ".test.index"), "w") as f:
+with open(os.path.join(data_dir, cfg_ds + ".test.index.dump"), "w") as f:
     f.write(test_ids_str)
 
 ids = train_ids + test_ids
@@ -188,10 +188,14 @@ for id in ids:
 shuffle_doc_name_str = "\n".join(shuffle_doc_name_list)
 shuffle_doc_words_str = "\n".join(shuffle_doc_words_list)
 
-with open(os.path.join(data_dir, cfg_ds + "_names.shuffle.txt"), "w") as f:
+with open(
+    os.path.join(data_dir, cfg_ds + "_names.shuffle.txt.dump"), "w"
+) as f:
     f.write(shuffle_doc_name_str)
 
-with open(os.path.join(data_dir, cfg_ds + "_texts.shuffle.txt"), "w") as f:
+with open(
+    os.path.join(data_dir, cfg_ds + "_texts.shuffle.txt.dump"), "w"
+) as f:
     f.write(shuffle_doc_words_str)
 
 # build vocab
@@ -236,7 +240,7 @@ for i in range(vocab_size):
 
 vocab_str = "\n".join(vocab)
 
-with open(os.path.join(data_dir, cfg_ds + "_vocab.txt"), "w") as f:
+with open(os.path.join(data_dir, cfg_ds + "_vocab.txt.dump"), "w") as f:
     f.write(vocab_str)
 
 print("Vocab size", args.ds, len(vocab))
@@ -248,7 +252,9 @@ for doc_meta in shuffle_doc_name_list:
 label_list = list(label_set)
 
 label_list_str = "\n".join(label_list)
-with open(os.path.join(data_dir, cfg_ds + "_labels.shuffle.txt"), "w") as f:
+with open(
+    os.path.join(data_dir, cfg_ds + "_labels.shuffle.txt.dump"), "w"
+) as f:
     f.write(label_list_str)
 
 
@@ -262,7 +268,7 @@ real_train_size = train_size - val_size  # - int(0.5 * train_size)
 real_train_doc_names = shuffle_doc_name_list[:real_train_size]
 real_train_doc_names_str = "\n".join(real_train_doc_names)
 
-with open(os.path.join(data_dir, cfg_ds + ".real_train.name"), "w") as f:
+with open(os.path.join(data_dir, cfg_ds + ".real_train.name.dump"), "w") as f:
     f.write(real_train_doc_names_str)
 
 
@@ -654,34 +660,34 @@ vocab_adj_tf = vocab_tfidf.dot(vocab_tfidf.T)
 #      Dump Objects
 ################################
 
-with open(os.path.join(data_dir, cfg_ds + ".dump.tfidf_list"), "wb") as f:
+with open(os.path.join(data_dir, cfg_ds + ".tfidf_list.dump"), "wb") as f:
     pkl.dump(tfidf_X_list, f)
-with open(os.path.join(data_dir, cfg_ds + ".dump.vocab_adj_npmi"), "wb") as f:
+with open(os.path.join(data_dir, cfg_ds + ".vocab_adj_npmi.dump"), "wb") as f:
     pkl.dump(vocab_adj_npmi, f)
-with open(os.path.join(data_dir, cfg_ds + ".dump.vocab_adj_pmi"), "wb") as f:
+with open(os.path.join(data_dir, cfg_ds + ".vocab_adj_pmi.dump"), "wb") as f:
     pkl.dump(vocab_adj_pmi, f)
-with open(os.path.join(data_dir, cfg_ds + ".dump.vocab_adj_tf"), "wb") as f:
+with open(os.path.join(data_dir, cfg_ds + ".vocab_adj_tf.dump"), "wb") as f:
     pkl.dump(vocab_adj_tf, f)
-with open(os.path.join(data_dir, cfg_ds + ".dump.vocab"), "wb") as f:
+with open(os.path.join(data_dir, cfg_ds + ".vocab.dump"), "wb") as f:
     pkl.dump(vocab, f)
 
-with open(os.path.join(data_dir, cfg_ds + ".dump.x"), "wb") as f:
+with open(os.path.join(data_dir, cfg_ds + ".x.dump"), "wb") as f:
     pkl.dump(x, f)
 
-with open(os.path.join(data_dir, cfg_ds + ".dump.y"), "wb") as f:
+with open(os.path.join(data_dir, cfg_ds + ".y.dump"), "wb") as f:
     pkl.dump(y, f)
 
-with open(os.path.join(data_dir, cfg_ds + ".dump.tx"), "wb") as f:
+with open(os.path.join(data_dir, cfg_ds + ".tx.dump"), "wb") as f:
     pkl.dump(tx, f)
 
-with open(os.path.join(data_dir, cfg_ds + ".dump.ty"), "wb") as f:
+with open(os.path.join(data_dir, cfg_ds + ".ty.dump"), "wb") as f:
     pkl.dump(ty, f)
 
-with open(os.path.join(data_dir, cfg_ds + ".dump.allx"), "wb") as f:
+with open(os.path.join(data_dir, cfg_ds + ".allx.dump"), "wb") as f:
     pkl.dump(allx, f)
 
-with open(os.path.join(data_dir, cfg_ds + ".dump.ally"), "wb") as f:
+with open(os.path.join(data_dir, cfg_ds + ".ally.dump"), "wb") as f:
     pkl.dump(ally, f)
 
-with open(os.path.join(data_dir, cfg_ds + ".dump.adj"), "wb") as f:
+with open(os.path.join(data_dir, cfg_ds + ".adj.dump"), "wb") as f:
     pkl.dump(adj, f)

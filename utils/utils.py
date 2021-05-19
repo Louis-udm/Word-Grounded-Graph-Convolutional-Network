@@ -63,7 +63,7 @@ def load_data(dataset_str):
     objects = []
     for i in range(len(names)):
         with open(
-            os.path.join(path, f"{dataset_str}.dump.{names[i]}"), "rb"
+            os.path.join(path, f"{dataset_str}.{names[i]}.dump"), "rb"
         ) as f:
             if sys.version_info > (3, 0):
                 objects.append(pkl.load(f, encoding="latin1"))
@@ -161,7 +161,7 @@ def load_corpus(dataset_str, path="data_dir/data"):
     objects = []
     for i in range(len(names)):
         with open(
-            os.path.join(path, f"{dataset_str}.dump.{names[i]}"), "rb"
+            os.path.join(path, f"{dataset_str}.{names[i]}.dump"), "rb"
         ) as f:
             if sys.version_info > (3, 0):
                 objects.append(pkl.load(f, encoding="latin1"))

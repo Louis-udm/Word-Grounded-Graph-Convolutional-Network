@@ -1,3 +1,17 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""Title: train MLP models
+
+Description: 
+
+"""
+
+# =======================================
+# @author Zhibin.Lu
+# @email zhibin.lu@umontreal.ca
+# =======================================
+
+
 from __future__ import division, print_function
 
 import argparse
@@ -54,7 +68,7 @@ torch.manual_seed(44)
 if cuda_yes:
     torch.cuda.manual_seed_all(44)
 
-print("\n Start at:", time.asctime(), "Machine:", os.uname()[1])
+print("\nStart at:", time.asctime(), "Machine:", os.uname()[1])
 
 
 def sparse_scipy2torch(coo_sparse):
