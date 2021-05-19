@@ -189,7 +189,7 @@ def load_corpus(dataset_str, path="data_dir/data"):
 
     #  train_idx_orig is before seprate real_train and valid
     train_idx_orig = parse_index_file(
-        path + "/../data/{}.train.index".format(dataset_str)
+        path + "/../data/{}.train.index.dump".format(dataset_str)
     )
     train_size = len(train_idx_orig)
 

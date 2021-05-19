@@ -32,13 +32,15 @@ from models import GCN_2Layers
 from utils.utils import *
 
 cuda_yes = torch.cuda.is_available()
-cuda_yes = False
+# cuda_yes = False
 # print('Cuda is available?', cuda_yes)
 device = torch.device("cuda:0" if cuda_yes else "cpu")
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--ds", type=str, default="mr")
-parser.add_argument("--model", type=str, default="GCN")  # MLP_1h, MLP_2h
+parser.add_argument(
+    "--model", type=str, default="GCN_2Layers"
+)  # MLP_1h, MLP_2h
 parser.add_argument(
     "--mode", type=str, default="only_gcn_act"
 )  # MLP_1h, MLP_2h
@@ -47,7 +49,6 @@ parser.add_argument("--adj", type=str, default="pmi")  # all,pmi,npmi,tf
 args = parser.parse_args()
 cfg_ds = args.ds
 cfg_vocab_adj = args.adj
-cfg_model = "WGCN"
 
 datasets = ["20ng", "R8", "R52", "ohsumed", "mr"]
 if cfg_ds not in datasets:

@@ -154,15 +154,7 @@ def evaluate(X, y, segment="valid"):
     y = torch.max(y, 1)[1]
     model.eval()
     with torch.no_grad():
-        # logits = model(features)
-        if cfg_model.startswith("MLP"):
-            logits = model(X)
-        else:
-            logits = model(
-                t_vocab_adj_list,
-                X,
-                add_linear_mapping_term=cfg_add_linear_mapping_term,
-            )
+        logits = model(X)
         loss = criterion(logits, y)
         pred = torch.max(logits, 1)[1]
         acc = pred.eq(y).sum().item() / len(y)
@@ -179,15 +171,7 @@ for epoch in range(cfg_epochs):
     model.train()
 
     # Forward pass
-    # logits = model(t_features)
-    if cfg_model in ("MLP_1h", "MLP_2h"):
-        logits = model(t_X_train.to_dense())
-    else:
-        logits = model(
-            t_vocab_adj_list,
-            t_X_train,
-            add_linear_mapping_term=cfg_add_linear_mapping_term,
-        )
+    logits = model(t_X_train.to_dense())
     loss = criterion(logits, torch.max(t_train_y, 1)[1])
     pred = torch.max(logits, 1)[1]
     acc = pred.eq(torch.max(t_train_y, 1)[1]).sum().item() / len(t_train_y)

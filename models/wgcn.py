@@ -175,6 +175,12 @@ class WGCN_VocabEmbedding(nn.Module):
         self.num_adj = num_adj
         self.voc_X_dim = voc_X_dim
 
+        # Wx_vh
+        for i in range(self.num_adj):
+            setattr(
+                self, "W%d_vh" % i, nn.Parameter(torch.randn(voc_dim, hid_dim))
+            )
+
         # self.Wx_vh=nn.Parameter(torch.randn(voc_dim, hid_dim))
         for i in range(self.num_adj):
             setattr(

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Title: Train WGCN models
+"""Title: Train WGCN_VocabEmbedding models
 
 Description: 
 
@@ -28,7 +28,7 @@ import torch
 import torch.nn as nn
 from sklearn import metrics
 
-from models import WGCN
+from models import WGCN_VocabEmbedding
 from utils.utils import *
 
 cuda_yes = torch.cuda.is_available()
@@ -40,8 +40,10 @@ device = torch.device("cuda:0" if cuda_yes else "cpu")
 parser = argparse.ArgumentParser()
 parser.add_argument("--ds", type=str, default="mr")
 parser.add_argument("--adj", type=str, default="pmi")  # all,pmi,npmi,tf
-parser.add_argument("--model", type=str, default="WGCN")  # MLP_1h, MLP_2h
-# parser.add_argument('--threshold_k', type=int, default='-1') #
+parser.add_argument(
+    "--model", type=str, default="WGCN_VocabEmbedding"
+)  # MLP_1h, MLP_2h
+# parser.add_argument("--threshold_k", type=int, default="-1")  #
 args = parser.parse_args()
 cfg_ds = args.ds
 cfg_vocab_adj = args.adj
@@ -72,7 +74,7 @@ cfg_dropout = 0.6
 cfg_weight_decay = 0.0
 # cfg_weight_decay = 5e-5
 cfg_epochs = 400
-cfg_add_linear_mapping_term = False
+cfg_add_linear_mapping_term = True
 
 cfg_normlize_x_mode = "normalize_features"
 
@@ -228,6 +230,51 @@ elif cfg_vocab_adj == "tf":
 elif cfg_vocab_adj == "all":
     vocab_adj_list = [vocab_adj_tf, vocab_adj_pmi]
 
+# Read Word Vectors
+def create_vocab_X(ds, vocab):
+    vocab_x_file = f"data/{ds}.vocab_x.dump"
+    if os.path.exists(vocab_x_file):
+        with open(vocab_x_file, "rb") as f:
+            vocab_X = pkl.load(f)
+    else:
+        # use glove word embedding
+        word_vector_file = "data/glove.6B.300d.txt"
+        _, embd, word_vector_map = loadWord2Vec(word_vector_file)
+        word_embeddings_dim = len(embd[0])
+        vocab_size = len(vocab)
+        vocab_X = np.zeros((vocab_size, word_embeddings_dim), dtype=np.float32)
+        em_vocab_sorted = sorted(
+            word_vector_map.keys(), key=lambda i: len(i), reverse=True
+        )
+        for i in range(vocab_size):
+            if vocab[i] in word_vector_map:
+                vocab_X[i] = np.array(
+                    word_vector_map[vocab[i]], dtype=np.float32
+                )
+            else:
+                for w in vocab[i].split("'"):
+                    if w != "":
+                        if w in word_vector_map:
+                            vocab_X[i] += np.array(
+                                word_vector_map[w], dtype=np.float32
+                            )
+                        else:
+                            for j, t in enumerate(em_vocab_sorted):
+                                if w.startswith(t):
+                                    vocab_X[i] += np.array(
+                                        word_vector_map[t], dtype=np.float32
+                                    )
+                                    print("\t", vocab[i], "->", t)
+                                    break
+        with open(vocab_x_file, "wb") as f:
+            pkl.dump(vocab_X, f)
+
+    return vocab_X
+
+
+print("Creating Vocab X ...")
+vocab_X = create_vocab_X(cfg_ds, vocab)
+
 print(
     "Dataset:",
     cfg_ds,
@@ -238,14 +285,10 @@ print(
 )
 
 # features = sp.identity(features.shape[0])  # featureless
-# use sparse:
 t_X_train = sparse_scipy2torch(real_train_x.tocoo()).to(device)
 t_X_valid = sparse_scipy2torch(valid_x.tocoo()).to(device)
 t_X_test = sparse_scipy2torch(test_x.tocoo()).to(device)
-# use dense:
-# t_X_train=torch.from_numpy(real_train_x.A).to(device)
-# t_X_valid=torch.from_numpy(valid_x.A).to(device)
-# t_X_test=torch.from_numpy(test_x.A).to(device)
+t_vocab_X = torch.FloatTensor(vocab_X).to(device)
 
 # Define placeholders
 # t_features = torch.from_numpy(features)
@@ -265,9 +308,11 @@ for i in range(len(vocab_adj_list)):
     adj = normalize_adj(adj)
     t_vocab_adj_list.append(sparse_scipy2torch(adj.tocoo()).to(device))
 
-model = WGCN(
+
+model = WGCN_VocabEmbedding(
     vocab_size,
     len(t_vocab_adj_list),
+    vocab_X.shape[1],
     cfg_hidden_dim,
     num_classes,
     cfg_act_func,
@@ -283,10 +328,9 @@ optimizer = torch.optim.Adam(
     model.parameters(), lr=cfg_learning_rate, weight_decay=cfg_weight_decay
 )
 
-
 # Define model evaluation function
 # def evaluate(features, labels, mask):
-def evaluate(X, y, segment="valid"):
+def evaluate(X, vocab_X, y, segment="valid"):
     t_test = time.time()
     y = torch.max(y, 1)[1]
     # feed_dict_val = construct_feed_dict(
@@ -297,6 +341,7 @@ def evaluate(X, y, segment="valid"):
         logits = model(
             t_vocab_adj_list,
             X,
+            vocab_X,
             add_linear_mapping_term=cfg_add_linear_mapping_term,
         )
         loss = criterion(logits, y)
@@ -318,6 +363,7 @@ for epoch in range(cfg_epochs):
     logits = model(
         t_vocab_adj_list,
         t_X_train,
+        t_vocab_X,
         add_linear_mapping_term=cfg_add_linear_mapping_term,
     )
     loss = criterion(logits, torch.max(t_train_y, 1)[1])
@@ -332,13 +378,15 @@ for epoch in range(cfg_epochs):
     # Validation
     # val_loss, val_acc, pred, labels, duration = evaluate(t_features, t_y_val, val_mask)
     val_loss, val_acc, val_pred, duration = evaluate(
-        t_X_valid, t_valid_y, segment="valid"
+        t_X_valid, t_vocab_X, t_valid_y, segment="valid"
     )
     val_losses.append(val_loss)
 
     # Testing
     # test_loss, test_acc, pred, labels, test_duration = evaluate(t_features, t_y_test, test_mask)
-    test_loss, test_acc, _, _ = evaluate(t_X_test, t_test_y, segment="test")
+    test_loss, test_acc, _, _ = evaluate(
+        t_X_test, t_vocab_X, t_test_y, segment="test"
+    )
 
     print_log(
         "Epoch:{:.0f}, train_loss={:.5f}, train_acc={:.5f}, v_loss={:.5f}, v_acc={:.5f}, t_loss={:.5f}, t_acc={:.5f}, time= {:.5f}".format(
@@ -362,10 +410,11 @@ for epoch in range(cfg_epochs):
 
 print_log("Optimization Finished!")
 
+
 # Testing
 # test_loss, test_acc, pred, labels, test_duration = evaluate(t_features, t_y_test, test_mask)
 test_loss, test_acc, test_pred, test_duration = evaluate(
-    t_X_test, t_test_y, segment="test"
+    t_X_test, t_vocab_X, t_test_y, segment="test"
 )
 
 print_log("Test Precision, Recall and F1-Score...")

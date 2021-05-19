@@ -5,6 +5,7 @@ backup/
 .idea/
 .vscode/
 *.dump
+glove.6B.300d.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
