@@ -6,12 +6,12 @@ The implementation of **[Word Grounded Graph Convolutional Network](https://arxi
 ## Overview
 This is the implementation of [Word Grounded Graph Convolutional Network](https://arxiv.org/abs/2305.06434). If you make use of this code or the WGCN or WGraph approach in your work, please cite the following paper:
 
-     @inproceedings{ZhibinluGraphEmbedding,
+     @inproceedings{ZhibinluWGCN,
 	     author    = {Zhibin Lu and Qianqian Xie and Benyou Wang and Jian-Yun Nie},
 	     title     = {Word Grounded Graph Convolutional Network},
-  	   publisher = {arXiv},
-  	   year      = {2023},
-	   }
+	     publisher = {arXiv},
+	     year      = {2023},
+	}
 
 ## Requirements
 
