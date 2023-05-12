@@ -11,7 +11,7 @@ This is the implementation of [Word Grounded Graph Convolutional Network](https:
 	     title     = {Word Grounded Graph Convolutional Network},
 	     publisher = {arXiv},
 	     year      = {2023},
-	}
+	  }
 
 ## Requirements
 
